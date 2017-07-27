@@ -3,6 +3,7 @@ import random
 import tensorflow as tf
 import numpy as np
 import time
+import os
 
 #############
 ### Utils ###
@@ -113,11 +114,22 @@ with tf.Session() as sess:
 	# Initialize parameters
 	sess.run(init)
 
-	### In case of interruption, load parameters from the last iteration (ex: 29)
-	#saver.restore(sess, './model_fc_29')
+	### In case of interruption, load parameters from the last 100th iteration
+	if os.path.isfile("./check.txt"):
+		check = open("./check.txt", "r")
+
+		for line in check:
+			tempstr = line.split()
+			rpt = int(tempstr[0])
+
+		saver.restore(sess, './model_fc_' + str(rpt))
+	
+	else:
+		rpt = 0
+	
+
 	### And update the loop to account for the previous iterations
-	#for i in range(29,n_epochs):
-	for i in range(n_epochs):
+	for i in range(rpt, n_epochs):
 		# Run 1 epoch
 		vloss = []
 		acc = []
@@ -138,6 +150,9 @@ with tf.Session() as sess:
 		if (i+1)%100 == 0:
 			path = 'model_fc_' + str(i+1)
 			save_path = saver.save(sess, path)
+			check = open("./check.txt", "w")
+			check.write(str(i+1))
+			check.close()
 
 		# Run validation
 		if (i+1)%1 == 0:
@@ -156,10 +171,12 @@ with tf.Session() as sess:
 
 			print('VAL '+str(i+1)+':', (100.*cont1)/(epoch_size*batch_size), (100.*cont5)/(epoch_size*batch_size))
 
+			print("{0} {1}: {2} sec".format("TIME", str(i+1), time.time() - start_time))
+
 			# Log Rank-1 and Rank-5
 			fp = open('log_fc.txt', 'a')
 			fp.write('VAL ' + str(i+1) + ' ' + str((100.*cont1)/(epoch_size*batch_size)) + ' ' + str((100.*cont5)/(epoch_size*batch_size)) + '\n')
 			fp.close()
 
 #prints total time
-print("--- %s seconds ---" % (time.time() - start_time))
+print("--- Total Runtime {0} Epochs: {1} seconds ---".format(str(n_epochs), time.time() - start_time))
