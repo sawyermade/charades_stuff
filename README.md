@@ -1,6 +1,7 @@
 # Description
 
 Training files for action classification using the Charades Activity Challenge dataset.
+Uses Python 3.6 instead of python 2.7.
 
 # Instructions for training using flow only
 
